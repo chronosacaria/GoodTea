@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "goodtea",
+  "version": "${version}",
+  "name": "GoodTea",
+  "description": "Sigh, good tea.",
+  "authors": [
+    "Chronosacaria"
+  ],
+  "contact": {
+    "website": "efwfe",
+    "repo": "ewfew"
+  },
+  "license": "Timefall Development License",
+  "icon": "assets/goodtea/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "timefall.goodtea.client.GoodTeaClient"
+    ],
+    "main": [
+      "timefall.goodtea.GoodTea"
+    ]
+  },
+  "mixins": [
+    "goodtea.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.9",
+    "fabric": "*",
+    "minecraft": ">=1.19.0"
+  }
+}
