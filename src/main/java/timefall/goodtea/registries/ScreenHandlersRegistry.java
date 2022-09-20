@@ -1,16 +1,17 @@
 package timefall.goodtea.registries;
 
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import timefall.goodtea.GoodTea;
-import timefall.goodtea.screenhandlers.TeaKettleScreenHandler;
+import timefall.goodtea.screens.screenhandlers.TeaKettleScreenHandler;
 
 public class ScreenHandlersRegistry {
-    public static final ScreenHandlerType<TeaKettleScreenHandler> TEA_KETTLE_SCREEN_HANDLER = new ExtendedScreenHandlerType<>(TeaKettleScreenHandler::new);
+    public static ScreenHandlerType<TeaKettleScreenHandler> TEA_KETTLE_SCREEN_HANDLER =
+            ScreenHandlerRegistry.registerSimple(new Identifier(GoodTea.MOD_ID, "tea_kettle"),
+                    TeaKettleScreenHandler::new);
 
     public static void registerScreenHandlers() {
-        Registry.register(Registry.SCREEN_HANDLER, new Identifier(GoodTea.MOD_ID, "tea_kettle"), TEA_KETTLE_SCREEN_HANDLER);
+        GoodTea.LOGGER.info("Steeping screen handlers to make some " + GoodTea.MOD_ID + "!");
     }
 }

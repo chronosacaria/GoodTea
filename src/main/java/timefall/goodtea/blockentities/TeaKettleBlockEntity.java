@@ -11,8 +11,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
+import timefall.goodtea.handlers.ItemStackHandler;
 import timefall.goodtea.registries.BlockEntitiesRegistry;
-import timefall.goodtea.screenhandlers.TeaKettleScreenHandler;
+import timefall.goodtea.screens.screenhandlers.TeaKettleScreenHandler;
 
 public class TeaKettleBlockEntity extends LootableContainerBlockEntity implements ExtendedScreenHandlerFactory {
     private DefaultedList<ItemStack> items = DefaultedList.ofSize(size(), ItemStack.EMPTY);
@@ -49,5 +50,9 @@ public class TeaKettleBlockEntity extends LootableContainerBlockEntity implement
     @Override
     public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
         buf.writeBlockPos(pos);
+    }
+
+    public ItemStackHandler getInventory() {
+        return itemHandler;
     }
 }
