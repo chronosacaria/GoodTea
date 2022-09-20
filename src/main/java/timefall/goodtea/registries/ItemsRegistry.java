@@ -11,6 +11,8 @@ public class ItemsRegistry {
 
     public static final Item SPEARMINT_LEAF = registerItem("spearmint_leaf",
             new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+    public static final Item SPEARMINT_TEA = registerItem("spearmint_tea",
+            new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
     public static final Item SPEARMINT_SEEDS = registerItem("spearmint_seeds",
             new AliasedBlockItem(BlocksRegistry.SPEARMINT_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
 

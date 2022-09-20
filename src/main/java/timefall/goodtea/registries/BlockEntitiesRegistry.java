@@ -5,7 +5,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import timefall.goodtea.GoodTea;
-import timefall.goodtea.blockentities.TeaKettleBlockEntity;
+import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
 
 public class BlockEntitiesRegistry {
     public static BlockEntityType<TeaKettleBlockEntity> TEA_KETTLE_BLOCK_ENTITY;
@@ -14,6 +14,6 @@ public class BlockEntitiesRegistry {
         TEA_KETTLE_BLOCK_ENTITY = Registry.register(Registry.BLOCK_ENTITY_TYPE,
                 new Identifier(GoodTea.MOD_ID, "tea_kettle_block_entity"),
                 FabricBlockEntityTypeBuilder.create(TeaKettleBlockEntity::new,
-                        BlocksRegistry.TEA_KETTLE_BLOCK).build());
+                        BlocksRegistry.TEA_KETTLE_BLOCK).build(null));
     }
 }

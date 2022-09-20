@@ -1,52 +1,104 @@
 package timefall.goodtea.screens.screenhandlers;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.ArrayPropertyDelegate;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.util.Identifier;
-import timefall.goodtea.blockentities.TeaKettleBlockEntity;
-import timefall.goodtea.handlers.ItemStackHandler;
-import timefall.goodtea.handlers.SlotItemHandler;
-import timefall.goodtea.registries.ExtendedScreenTypesRegistry;
+import net.minecraft.screen.slot.Slot;
+import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
+import timefall.goodtea.registries.ScreenHandlersRegistry;
 
 public class TeaKettleScreenHandler extends ScreenHandler {
 
-    private static final int INV_INDEX_INGREDIENT_DISPLAY = 9;
-    private static final int INV_INDEX_CONTAINER_INPUT = INV_INDEX_INGREDIENT_DISPLAY + 1;
-    private static final int INV_INDEX_OUTPUT = INV_INDEX_CONTAINER_INPUT + 1;
-    private static final int INV_INDEX_START_PLAYER_INVENTORY = INV_INDEX_OUTPUT + 1;
-    private static final int INV_INDEX_END_PLAYER_INVENTORY = INV_INDEX_START_PLAYER_INVENTORY + 36;
+    private final Inventory inventory;
+    private final PropertyDelegate propertyDelegate;
 
-    public final TeaKettleBlockEntity teaKettleBlockEntity;
-    public final ItemStackHandler inventoryHandler;
-    private final PropertyDelegate teaKettleData;
-    private final ScreenHandlerContext canInteractWithCallable;
+    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory) {
+        this(syncId, playerInventory, new SimpleInventory(TeaKettleBlockEntity.numberOfSlotsInTeaKettle), new ArrayPropertyDelegate(2));
+    }
 
-    public TeaKettleScreenHandler(final int windowId, final PlayerInventory playerInventory, final TeaKettleBlockEntity teaKettleBlockEntity, PropertyDelegate teaKettleData) {
-        super(ExtendedScreenTypesRegistry.TEA_KETTLE.get(), windowId);
-        this.teaKettleBlockEntity = teaKettleBlockEntity;
-        this.inventoryHandler = teaKettleBlockEntity.getInventory();
-        this.teaKettleData = teaKettleData;
-        this.canInteractWithCallable = ScreenHandlerContext.create(teaKettleBlockEntity.getWorld(), teaKettleBlockEntity.getPos());
+    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate propertyDelegate) {
+        super(ScreenHandlersRegistry.TEA_KETTLE_SCREEN_HANDLER, syncId);
+        checkSize(inventory, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
+        this.inventory = inventory;
+        inventory.onOpen(playerInventory.player);
+        this.propertyDelegate = propertyDelegate;
 
-        // Ingredient Slots 3 Rows x 3 Columns
-        int startX = 8;
-        int startY = 18;
-        int inputStartX = 30;
-        int inputStartY = 17;
-        int borderSlotSize = 18;
-        for (int row = 0; row < 3; ++row) {
-            for (int column = 0; column < 3; ++column) {
-                addSlot(new SlotItemHandler(inventoryHandler, (row * 3) + column,
-                        inputStartX + (column * borderSlotSize),
-                        inputStartY + (row * borderSlotSize)));
+        this.addSlot(new Slot(inventory, 0, 20 + 1, 17 + 1));
+        this.addSlot(new Slot(inventory, 1, 38 + 1, 17 + 1));
+        this.addSlot(new Slot(inventory, 2, 56 + 1, 17 + 1));
+        this.addSlot(new Slot(inventory, 3, 20 + 1, 35 + 1));
+        this.addSlot(new Slot(inventory, 4, 38 + 1, 35 + 1));
+        this.addSlot(new Slot(inventory, 5, 56 + 1, 35 + 1));
+        this.addSlot(new Slot(inventory, 6, 20 + 1, 53 + 1));
+        this.addSlot(new Slot(inventory, 7, 38 + 1, 53 + 1));
+        this.addSlot(new Slot(inventory, 8, 56 + 1, 53 + 1));
+        this.addSlot(new Slot(inventory, 9, 111 + 5, 30 + 5));
+
+        addPlayerInventory(playerInventory);
+        addPlayerHotbar(playerInventory);
+
+        addProperties(propertyDelegate);
+    }
+
+    public boolean isCrafting() {
+        return propertyDelegate.get(0) > 0;
+    }
+
+    public int getScaledProgress() {
+        int progress = this.propertyDelegate.get(0);
+        int maxProgress = this.propertyDelegate.get(1);
+        int progressArrowSize = 26;
+
+        return maxProgress !=0 && progress != 0 ? progress * progressArrowSize / maxProgress : 0;
+    }
+
+    @Override
+    public ItemStack transferSlot(PlayerEntity player, int invSlot) {
+        ItemStack newStack = ItemStack.EMPTY;
+        Slot slot = this.slots.get(invSlot);
+        if (slot != null && slot.hasStack()) {
+            ItemStack originalStack = slot.getStack();
+            newStack = originalStack.copy();
+            if (invSlot < this.inventory.size()) {
+                if (!this.insertItem(originalStack, this.inventory.size(), this.slots.size(), true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!this.insertItem(originalStack, 0, this.inventory.size(), false)) {
+                return ItemStack.EMPTY;
+            }
+
+            if (originalStack.isEmpty()) {
+                slot.setStack(ItemStack.EMPTY);
+            } else {
+                slot.markDirty();
             }
         }
 
-        // Tea Slot
-        addSlot(new SlotItemHandler(inventoryHandler, 10, 124, 26));
+        return newStack;
     }
 
+    @Override
+    public boolean canUse(PlayerEntity player) {
+        return this.inventory.canPlayerUse(player);
+    }
+
+    private void addPlayerInventory(PlayerInventory playerInventory) {
+        for (int i = 0; i < 3; i++) {
+            for (int l = 0; l < 9; l++) {
+                this.addSlot(new Slot(playerInventory, l + i * 9 + 9, 8 + l * 18, 84 + i * 18));
+            }
+        }
+    }
+
+    private void addPlayerHotbar(PlayerInventory playerInventory) {
+        for (int i = 0; i < 9; i++) {
+            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
+        }
+    }
 }
 
