@@ -18,10 +18,13 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import timefall.goodtea.recipes.TeaRecipe;
 import timefall.goodtea.registries.BlockEntitiesRegistry;
 import timefall.goodtea.registries.ItemsRegistry;
 import timefall.goodtea.registries.TeaRecipeRegistry;
 import timefall.goodtea.screens.screenhandlers.TeaKettleScreenHandler;
+
+import java.util.Optional;
 
 public class TeaKettleBlockEntity extends BlockEntity implements NamedScreenHandlerFactory, IImplementedInventory {
     public static int numberOfSlotsInTeaKettle = 10;
@@ -111,9 +114,12 @@ public class TeaKettleBlockEntity extends BlockEntity implements NamedScreenHand
             inventory.setStack(i, entity.getStack(i));
         }
 
+        Optional<TeaRecipe> recipe = entity.getWorld().getRecipeManager()
+                .getFirstMatch(TeaRecipe.Type.INSTANCE, inventory, entity.getWorld());
+
         if (hasRecipe(entity)) {
             entity.removeStack(0,1);
-            entity.setStack(numberOfSlotsInTeaKettle - 1, new ItemStack(ItemsRegistry.SPEARMINT_TEA,
+            entity.setStack(numberOfSlotsInTeaKettle - 1, new ItemStack(recipe.get().getOutput().getItem(),
                     entity.getStack(numberOfSlotsInTeaKettle - 1).getCount() + 1));
             entity.resetProgress();
         }
@@ -125,10 +131,11 @@ public class TeaKettleBlockEntity extends BlockEntity implements NamedScreenHand
             inventory.setStack(i, entity.getStack(i));
         }
 
-        boolean hasTeaIngredientsInCraftingSlots = entity.getStack(0).getItem() == ItemsRegistry.SPEARMINT_LEAF;
+        Optional<TeaRecipe> match = entity.getWorld().getRecipeManager()
+                .getFirstMatch(TeaRecipe.Type.INSTANCE, inventory, entity.getWorld());
 
-        return hasTeaIngredientsInCraftingSlots && canInsertAmountIntoOutputSlot(inventory)
-                && canInsertItemIntoOutputSlot(inventory, ItemsRegistry.SPEARMINT_TEA);
+        return match.isPresent() && canInsertAmountIntoOutputSlot(inventory)
+                && canInsertItemIntoOutputSlot(inventory, match.get().getOutput().getItem());
     }
 
     private static boolean canInsertItemIntoOutputSlot(SimpleInventory inventory, Item output) {
@@ -139,20 +146,20 @@ public class TeaKettleBlockEntity extends BlockEntity implements NamedScreenHand
         return inventory.getStack(numberOfSlotsInTeaKettle - 1).getMaxCount() > inventory.getStack(numberOfSlotsInTeaKettle - 1).getCount();
     }
 
-    private static boolean hasTeaIngredientsInCraftingSlots(DefaultedList<ItemStack> slots) {
-        ItemStack itemStack = slots.get(9);
-        if (itemStack.isEmpty())
-            return false;
-        else if (!TeaRecipeRegistry.isValidIngredient(itemStack))
-            return false;
-        else {
-            for (int i = 0; i < 9; ++i) {
-                ItemStack itemStack2 = slots.get(i);
-                if (!itemStack2.isEmpty() && TeaRecipeRegistry.hasRecipe(itemStack2, itemStack)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+//    private static boolean hasTeaIngredientsInCraftingSlots(DefaultedList<ItemStack> slots) {
+//        ItemStack itemStack = slots.get(9);
+//        if (itemStack.isEmpty())
+//            return false;
+//        else if (!TeaRecipeRegistry.isValidIngredient(itemStack))
+//            return false;
+//        else {
+//            for (int i = 0; i < 9; ++i) {
+//                ItemStack itemStack2 = slots.get(i);
+//                if (!itemStack2.isEmpty() && TeaRecipeRegistry.hasRecipe(itemStack2, itemStack)) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
 }

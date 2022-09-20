@@ -21,7 +21,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
 import timefall.goodtea.registries.BlockEntitiesRegistry;
-
+@SuppressWarnings("deprecation")
 public class TeaKettleBlock extends BlockWithEntity implements BlockEntityProvider{
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
 

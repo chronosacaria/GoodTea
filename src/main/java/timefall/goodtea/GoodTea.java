@@ -6,10 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import timefall.goodtea.registries.BlockEntitiesRegistry;
-import timefall.goodtea.registries.BlocksRegistry;
-import timefall.goodtea.registries.ItemsRegistry;
-import timefall.goodtea.registries.ScreenHandlersRegistry;
+import timefall.goodtea.registries.*;
 
 public class GoodTea implements ModInitializer {
 
@@ -31,5 +28,6 @@ public class GoodTea implements ModInitializer {
         BlocksRegistry.registerBlocks();
         BlockEntitiesRegistry.registerBlockEntities();
         ScreenHandlersRegistry.registerScreenHandlers();
+        TeaRecipeRegistry.registerRecipes();
     }
 }

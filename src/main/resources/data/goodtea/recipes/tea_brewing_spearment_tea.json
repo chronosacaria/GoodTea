@@ -1,0 +1,11 @@
+{
+  "type": "goodtea:tea_brewing",
+  "ingredients": [
+    {
+      "item": "goodtea:spearmint_leaf"
+    }
+  ],
+  "output": {
+    "item": "goodtea:spearmint_tea"
+  }
+}

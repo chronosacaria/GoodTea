@@ -34,12 +34,13 @@ public class TeaKettleScreen extends HandledScreen<TeaKettleScreenHandler> {
         int x = (width - backgroundWidth) / 2;
         int y = (height - backgroundHeight) / 2;
         drawTexture(matrices, x, y, 0, 0, backgroundWidth, backgroundHeight);
+
+        renderProgressArrow(matrices, x, y);
     }
 
     private void renderProgressArrow(MatrixStack matrices, int x, int y) {
         if (handler.isCrafting()) {
-                                   /*draw x, draw y, what to draw x, what to draw width*/
-            drawTexture(matrices, x + 105, y + 33, 176, 0, 8, handler.getScaledProgress());
+            drawTexture(matrices, x + 80 , y + 35, 176, 0, handler.getScaledProgress(), 16);
         }
     }
 
