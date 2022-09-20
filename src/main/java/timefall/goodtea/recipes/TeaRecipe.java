@@ -1,5 +1,6 @@
 package timefall.goodtea.recipes;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.inventory.SimpleInventory;
@@ -9,11 +10,13 @@ import net.minecraft.recipe.*;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import timefall.goodtea.blocks.TeaKettleBlock;
 import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TeaRecipe implements Recipe<SimpleInventory> {
@@ -95,17 +98,38 @@ public class TeaRecipe implements Recipe<SimpleInventory> {
         public static final Serializer INSTANCE = new Serializer();
         public static final String ID = "tea_brewing";
 
+        public static class TeaRecipeJSON {
+            public String type;
+            public Ingredient[] ingredients;
+            public static class Ingredient {
+                public String item;
+            }
+            public Output output;
+            public static class Output {
+                public String item;
+            }
+        }
+
         @Override
         public TeaRecipe read(Identifier id, JsonObject json) {
-            ItemStack output = ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "output"));
+            var gson = new Gson();
+            var teaRecipeJSON = gson.fromJson(json, TeaRecipeJSON.class);
+            var ingredients = Arrays.stream(teaRecipeJSON.ingredients).map(ingredient -> {
+               var ingredientId = new Identifier(ingredient.item);
+                //return Registry.ITEM.get(ingredientId).getDefaultStack();
+                return Ingredient.ofItems(Registry.ITEM.get(ingredientId));
+            }).toList();
 
-            JsonArray ingredients = JsonHelper.getArray(json, "ingredients");
+
+//            ItemStack output = ShapedRecipe.outputFromJson(JsonHelper.getObject(json, "output"));
+//
+//            JsonArray ingredients = JsonHelper.getArray(json, "ingredients");
             DefaultedList<Ingredient> inputs = DefaultedList.ofSize(TeaKettleBlockEntity.numberOfSlotsInTeaKettle - 1, Ingredient.EMPTY);
 
-            for (int i = 0; i < inputs.size(); i++) {
-                inputs.set(i, Ingredient.fromJson(ingredients.get(i)));
+            for (int i = 0; i < ingredients.size(); i++) {
+                inputs.set(i, ingredients.get(i));
             }
-
+            ItemStack output = Registry.ITEM.get(new Identifier(teaRecipeJSON.output.item)).getDefaultStack();
             return new TeaRecipe(id, output, inputs);
         }
 
