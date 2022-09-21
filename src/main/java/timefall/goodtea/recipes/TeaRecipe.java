@@ -1,12 +1,17 @@
+/*
 package timefall.goodtea.recipes;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.recipe.*;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.RecipeType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.collection.DefaultedList;
@@ -19,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TeaRecipe implements Recipe<SimpleInventory> {
+public class TeaRecipe implements Recipe<Inventory> {
     private final Identifier id;
     private final ItemStack output;
     private final DefaultedList<Ingredient> recipeItems;
@@ -31,46 +36,52 @@ public class TeaRecipe implements Recipe<SimpleInventory> {
     }
 
 
+    @Override
+    public boolean matches(Inventory inventory, World world) {
+        if (world.isClient()) {
+            return false;
+        }
+
+        List<ItemStack> inputList = new ArrayList<>();
+        int slotCount = 0;
+
+        for (int slotOffset = 0; slotOffset < TeaKettleBlockEntity.numberOfSlotsInTeaKettle - 1; slotOffset++) {
+            ItemStack itemStack = inventory.getStack(slotOffset);
+            if (!itemStack.isEmpty()) {
+                slotCount++;
+                inputList.add(itemStack);
+            }
+        }
+        return slotCount == recipeItems.size() && TeaRecipeMatcher.findMatches(inputList, recipeItems) != null;
+    }
+
     //@Override
     //public boolean matches(SimpleInventory inventory, World world) {
     //    if (world.isClient()) {
     //        return false;
     //    }
-    //
-    //    List<ItemStack> inputList = new ArrayList<>();
-    //    int slotCount = 0;
-    //
-    //    for (int slotOffset = 0; slotOffset < TeaKettleBlockEntity.numberOfSlotsInTeaKettle - 1; slotOffset++) {
-    //        ItemStack itemStack = inventory.getStack(slotOffset);
-    //        if (!itemStack.isEmpty()) {
-    //            slotCount++;
-    //            inputList.add(itemStack);
-    //        }
-    //    }
-    //    return slotCount == recipeItems.size() &&
+    //    return recipeItems.get(0).test(inventory.getStack(0));
     //}
 
     @Override
-    public boolean matches(SimpleInventory inventory, World world) {
-        if (world.isClient()) {
-            return false;
-        }
-        return recipeItems.get(0).test(inventory.getStack(0));
+    public ItemStack craft(Inventory inventory) {
+        return output.copy();
     }
 
-    @Override
-    public ItemStack craft(SimpleInventory inventory) {
-        return output;
-    }
+
+    //@Override
+    //public ItemStack craft(SimpleInventory inventory) {
+    //    return output;
+    //}
 
     @Override
     public boolean fits(int width, int height) {
-        return true;
+        return width * height >= recipeItems.size();
     }
 
     @Override
     public ItemStack getOutput() {
-        return output.copy();
+        return output;
     }
 
     @Override
@@ -155,3 +166,4 @@ public class TeaRecipe implements Recipe<SimpleInventory> {
         }
     }
 }
+*/
