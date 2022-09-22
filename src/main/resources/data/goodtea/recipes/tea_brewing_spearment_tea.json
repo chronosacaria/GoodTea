@@ -1,11 +1,11 @@
 {
   "type": "goodtea:tea_brewing",
-  "ingredients": [
-    {
-      "item": "goodtea:spearmint_leaf"
-    }
+  "ingredient": [
+    {"item": "goodtea:spearmint_leaf"},
+    {"item": "minecraft:water_bucket"}
   ],
-  "output": {
-    "item": "goodtea:spearmint_tea"
-  }
+  "container": "goodtea:tea_cup",
+  "result": [
+    {"item": "goodtea:spearmint_tea"}
+  ]
 }

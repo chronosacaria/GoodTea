@@ -5,6 +5,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ArrayPropertyDelegate;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
@@ -19,6 +20,14 @@ public class TeaKettleScreenHandler extends ScreenHandler {
 
     public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory) {
         this(syncId, playerInventory, new SimpleInventory(TeaKettleBlockEntity.numberOfSlotsInTeaKettle), new ArrayPropertyDelegate(2));
+    }
+
+    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
+        this(syncId, playerInventory);
+        for (int i = 0; i < TeaKettleBlockEntity.numberOfSlotsInTeaKettle; i++) {
+            inventory.setStack(i, buf.readItemStack());
+        }
+        buf.readInt();
     }
     public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate propertyDelegate) {
         super(ScreenHandlersRegistry.TEA_KETTLE_SCREEN_HANDLER, syncId);
@@ -49,7 +58,6 @@ public class TeaKettleScreenHandler extends ScreenHandler {
 
         addProperties(propertyDelegate);
     }
-
 
 
     public boolean isCrafting() {

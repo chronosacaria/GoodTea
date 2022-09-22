@@ -45,6 +45,15 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
     private int progress = 0;
     private int maxProgress = 72;
 
+    @Override
+    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+        for (ItemStack stack : inventory) {
+            buf.writeItemStack(stack);
+        }
+        buf.writeInt(progress);
+    }
+
+
     protected final PropertyDelegate propertyDelegate = new PropertyDelegate() {
         @Override
         public int get(int index) {
@@ -72,6 +81,8 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
 
     public TeaKettleBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntitiesRegistry.TEA_KETTLE_BLOCK_ENTITY, pos, state);
+        this.latestIngredient = this.latestResult = Ingredient.EMPTY;
+        this.latestContainer = ItemStack.EMPTY;
     }
 
     public DefaultedList<ItemStack> getIngredient() {
@@ -286,10 +297,7 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         return true;
     }
 
-    @Override
-    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
 
-    }
 
     @Override
     public int[] getAvailableSlots(Direction side) {
