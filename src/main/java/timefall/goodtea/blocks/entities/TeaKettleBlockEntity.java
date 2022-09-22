@@ -1,21 +1,12 @@
 package timefall.goodtea.blocks.entities;
 
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.inventory.SimpleInventory;
@@ -28,7 +19,6 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ItemScatterer;
@@ -41,9 +31,7 @@ import timefall.goodtea.enums.TeaKettleSlots;
 import timefall.goodtea.recipes.TeaRecipe;
 import timefall.goodtea.registries.BlockEntitiesRegistry;
 import timefall.goodtea.registries.ItemsRegistry;
-import timefall.goodtea.registries.NetworkingRegistry;
 import timefall.goodtea.screens.screenhandlers.TeaKettleScreenHandler;
-import timefall.goodtea.utils.FluidStack;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,37 +44,6 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
     private Ingredient latestResult;
     private int progress = 0;
     private int maxProgress = 72;
-
-    public final SingleVariantStorage<FluidVariant> fluidStorage = new SingleVariantStorage<FluidVariant>() {
-        @Override
-        protected FluidVariant getBlankVariant() {
-            return FluidVariant.blank();
-        }
-
-        @Override
-        protected long getCapacity(FluidVariant variant) {
-            return FluidStack.convertDropletsToMb(FluidConstants.BUCKET);
-        }
-
-        @Override
-        protected void onFinalCommit() {
-            markDirty();
-            if (!world.isClient()) {
-                sendFluidPacket();
-            }
-        }
-    };
-
-    private void sendFluidPacket() {
-        PacketByteBuf data = PacketByteBufs.create();
-        fluidStorage.variant.toPacket(data);
-        data.writeLong(fluidStorage.amount);
-        data.writeBlockPos(getPos());
-
-        for (ServerPlayerEntity player : PlayerLookup.tracking((ServerWorld) world, getPos())) {
-            ServerPlayNetworking.send(player, NetworkingRegistry.WATER_SYNC, data);
-        }
-    }
 
     @Override
     public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
@@ -121,10 +78,6 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         }
     };
 
-    public void setFluidLevel(FluidVariant fluidVariant, long fluidLevel) {
-        this.fluidStorage.variant = fluidVariant;
-        this.fluidStorage.amount = fluidLevel;
-    }
 
     public TeaKettleBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntitiesRegistry.TEA_KETTLE_BLOCK_ENTITY, pos, state);
@@ -197,7 +150,6 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
     @Nullable
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        sendFluidPacket();
         return new TeaKettleScreenHandler(syncId, inv, this, this.propertyDelegate);
     }
 
@@ -206,8 +158,6 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         super.writeNbt(nbt);
         Inventories.writeNbt(nbt, inventory);
         nbt.putInt("tea_kettle.progress", progress);
-        nbt.put("tea_kettle.variant", fluidStorage.variant.toNbt());
-        nbt.putLong("tea_kettle.fluid", fluidStorage.amount);
     }
 
     @Override
@@ -215,8 +165,6 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         Inventories.readNbt(nbt, inventory);
         super.readNbt(nbt);
         progress = nbt.getInt("tea_kettle.progress");
-        fluidStorage.variant = FluidVariant.fromNbt((NbtCompound) nbt.get("tea_kettle.variant"));
-        fluidStorage.amount = nbt.getLong("tea_kettle.fluid");
     }
 
     private void resetProgress() {
@@ -232,23 +180,19 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
             }
             if (entity.getContainer().isOf(ItemsRegistry.TEA_CUP) && entity.getContainer().isOf(entity.latestContainer.getItem())
                     && entity.getResults().get(0).isOf(Items.AIR) && entity.compareList(List.of(entity.latestIngredient.getMatchingStacks()),
-                    entity.getIngredient()) && entity.isOnLitObject() && hasEnoughWater(entity)) {
+                    entity.getIngredient()) && entity.isOnLitObject()) {
                 matchRecipe(world, entity);
                 entity.progress++;
                 if (entity.progress >= entity.maxProgress) {
                     entity.insertResults(entity.latestResult);
                     entity.removeIngredients();
-                    extractWater(entity);
                 }
             } else {
                 entity.resetProgress();
                 markDirty(world, blockPos, blockState);
             }
-
-            if (hasWaterSourceInSlot(entity)) {
-                transferWaterToKettle(entity);
-            }
         }
+
 
 
         //if (world.isClient()) return;
@@ -262,31 +206,6 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         //    entity.resetProgress();
         //    markDirty(world, blockPos, blockState);
         //}
-    }
-
-    private static void extractWater(TeaKettleBlockEntity entity) {
-        try(Transaction transaction = Transaction.openOuter()) {
-            entity.fluidStorage.extract(FluidVariant.of(Fluids.WATER.getStill()),
-                    100, transaction);
-            transaction.commit();
-        }
-    }
-
-    private static void transferWaterToKettle(TeaKettleBlockEntity entity) {
-        try(Transaction transaction = Transaction.openOuter()) {
-            entity.fluidStorage.insert(FluidVariant.of(Fluids.WATER.getStill()),
-                    FluidStack.convertDropletsToMb(FluidConstants.BUCKET), transaction);
-            transaction.commit();
-            entity.setStack(10, new ItemStack(Items.BUCKET));
-        }
-    }
-
-    private static boolean hasWaterSourceInSlot(TeaKettleBlockEntity entity) {
-        return entity.getStack(10).isOf(Items.WATER_BUCKET);
-    }
-
-    private static boolean hasEnoughWater(TeaKettleBlockEntity entity) {
-        return entity.fluidStorage.amount >= 100; // Amount in mB
     }
 
     public static void matchRecipe(World world, TeaKettleBlockEntity teaKettleBlockEntity) {
