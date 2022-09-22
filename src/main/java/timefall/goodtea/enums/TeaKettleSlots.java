@@ -10,8 +10,8 @@ public enum TeaKettleSlots {
     INGREDIENT_7,
     INGREDIENT_8,
     INGREDIENT_9,
-    CONTAINER,
     RESULT,
+    CONTAINER,
     WATER_CONTAINER;
 
     public static int[] UP_SLOTS = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8};
