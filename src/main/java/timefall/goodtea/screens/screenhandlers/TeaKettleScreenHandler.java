@@ -1,9 +1,9 @@
 package timefall.goodtea.screens.screenhandlers;
 
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ArrayPropertyDelegate;
@@ -13,30 +13,40 @@ import net.minecraft.screen.slot.Slot;
 import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
 import timefall.goodtea.enums.TeaKettleSlots;
 import timefall.goodtea.registries.ScreenHandlersRegistry;
+import timefall.goodtea.utils.FluidStack;
 
 public class TeaKettleScreenHandler extends ScreenHandler {
     public final Inventory inventory;
     public PropertyDelegate propertyDelegate;
-
-    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(TeaKettleBlockEntity.numberOfSlotsInTeaKettle), new ArrayPropertyDelegate(2));
-    }
+    public final TeaKettleBlockEntity blockEntity;
+    public FluidStack fluidStack;
 
     public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
-        this(syncId, playerInventory);
+        this(syncId, playerInventory, playerInventory.player.getWorld().getBlockEntity(buf.readBlockPos()),
+                new ArrayPropertyDelegate(2));
         for (int i = 0; i < TeaKettleBlockEntity.numberOfSlotsInTeaKettle; i++) {
             inventory.setStack(i, buf.readItemStack());
         }
         buf.readInt();
     }
-    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate propertyDelegate) {
+
+    //public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
+    //    this(syncId, playerInventory);
+    //    for (int i = 0; i < TeaKettleBlockEntity.numberOfSlotsInTeaKettle; i++) {
+    //        inventory.setStack(i, buf.readItemStack());
+    //    }
+    //    buf.readInt();
+    //}
+    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, BlockEntity entity, PropertyDelegate propertyDelegate) {
         super(ScreenHandlersRegistry.TEA_KETTLE_SCREEN_HANDLER, syncId);
-        checkDataCount(propertyDelegate, 2);
-        this.propertyDelegate = propertyDelegate;
-        this. addProperties(propertyDelegate);
-        checkSize(inventory, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
-        this.inventory = inventory;
+        checkSize(((Inventory)entity), TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
+        this.inventory = (Inventory)entity;
         inventory.onOpen(playerInventory.player);
+        this.propertyDelegate = propertyDelegate;
+        this.blockEntity = (TeaKettleBlockEntity)entity;
+        checkDataCount(propertyDelegate, 2);
+
+        this.fluidStack = new FluidStack(blockEntity.fluidStorage.variant, blockEntity.fluidStorage.amount);
 
         int i, j;
         for(i = 0; i < 3; ++i) {
@@ -45,9 +55,11 @@ public class TeaKettleScreenHandler extends ScreenHandler {
             }
         }
 
-        this.addSlot(new Slot(inventory, TeaKettleSlots.CONTAINER.ordinal(), 83, 36));
+        this.addSlot(new Slot(inventory, 8, 83, 54));
 
-        this.addSlot(new Slot(inventory, TeaKettleSlots.RESULT.ordinal(), 130  + 5, 30 + 5));
+        this.addSlot(new Slot(inventory, 9, 83, 19));
+
+        this.addSlot(new Slot(inventory, 10, 130  + 5, 30 + 5));
 
 
 
@@ -58,7 +70,6 @@ public class TeaKettleScreenHandler extends ScreenHandler {
 
         addProperties(propertyDelegate);
     }
-
 
     public boolean isCrafting() {
         return propertyDelegate.get(0) > 0;
@@ -112,6 +123,10 @@ public class TeaKettleScreenHandler extends ScreenHandler {
         for (int i = 0; i < 9; i++) {
             this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
         }
+    }
+
+    public void setFluid(FluidStack stack) {
+        fluidStack = stack;
     }
 }
 
