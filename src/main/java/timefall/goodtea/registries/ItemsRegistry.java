@@ -9,6 +9,9 @@ import timefall.goodtea.GoodTea;
 
 public class ItemsRegistry {
 
+    public static final Item TEA_CUP = registerItem("tea_cup",
+            new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+
     public static final Item SPEARMINT_LEAF = registerItem("spearmint_leaf",
             new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
     public static final Item SPEARMINT_TEA = registerItem("spearmint_tea",

@@ -40,7 +40,7 @@ public class TeaKettleScreen extends HandledScreen<TeaKettleScreenHandler> {
 
     private void renderProgressArrow(MatrixStack matrices, int x, int y) {
         if (handler.isCrafting()) {
-            drawTexture(matrices, x + 80 , y + 35, 176, 0, handler.getScaledProgress(), 16);
+            drawTexture(matrices, x + 104 , y + 36 , 176, 0, handler.getScaledProgress(), 16);
         }
     }
 
