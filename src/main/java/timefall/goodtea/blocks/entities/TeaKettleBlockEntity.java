@@ -181,6 +181,8 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
             if (entity.getContainer().isOf(ItemsRegistry.TEA_CUP) && entity.getContainer().isOf(entity.latestContainer.getItem())
                     && entity.getResults().get(0).isOf(Items.AIR) && entity.compareList(List.of(entity.latestIngredient.getMatchingStacks()),
                     entity.getIngredient()) && entity.isOnLitObject()) {
+                matchRecipe(world, entity);
+                entity.progress++;
                 if (entity.progress >= entity.maxProgress) {
                     entity.insertResults(entity.latestResult);
                     entity.removeIngredients();
@@ -275,7 +277,7 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
     public boolean isOnLitObject() {
         return this.world != null &&
                 (this.world.getBlockState(this.pos.down()).isOf(Blocks.FURNACE)
-                && this.world.getBlockState(this.pos.down()).get(Properties.LIT));
+                        && this.world.getBlockState(this.pos.down()).get(Properties.LIT));
     }
 
     public boolean compareList(List<ItemStack> itemStacks1, List<ItemStack> itemStacks2) {

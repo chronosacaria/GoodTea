@@ -41,11 +41,11 @@ public class TeaKettleScreenHandler extends ScreenHandler {
         int i, j;
         for(i = 0; i < 3; ++i) {
             for(j = 0; j < 3; ++j) {
-                this.addSlot(new Slot(inventory, j + i * 3, 30 + j * 18, 17 + i * 18));
+                this.addSlot(new Slot(inventory, j + i * 3, 21 + j * 18, 18 + i * 18));
             }
         }
 
-        this.addSlot(new Slot(inventory, TeaKettleSlots.CONTAINER.ordinal(), 82, 35));
+        this.addSlot(new Slot(inventory, TeaKettleSlots.CONTAINER.ordinal(), 83, 36));
 
         this.addSlot(new Slot(inventory, TeaKettleSlots.RESULT.ordinal(), 130  + 5, 30 + 5));
 
