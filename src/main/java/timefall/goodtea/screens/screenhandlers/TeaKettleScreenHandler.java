@@ -45,7 +45,7 @@ public class TeaKettleScreenHandler extends ScreenHandler {
             }
         }
 
-        this.addSlot(new Slot(inventory, TeaKettleSlots.CONTAINER.ordinal(), 83, 36));
+        this.addSlot(new Slot(inventory, TeaKettleSlots.CONTAINER.ordinal(), 83, 54));
 
         this.addSlot(new Slot(inventory, TeaKettleSlots.RESULT.ordinal(), 130  + 5, 30 + 5));
 
