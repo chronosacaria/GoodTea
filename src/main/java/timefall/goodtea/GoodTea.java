@@ -29,5 +29,6 @@ public class GoodTea implements ModInitializer {
         BlockEntitiesRegistry.registerBlockEntities();
         ScreenHandlersRegistry.registerScreenHandlers();
         TeaRecipeRegistry.registerRecipes();
+        PacketsRegistry.registerS2CPackets();
     }
 }

@@ -1,7 +1,13 @@
 package timefall.goodtea.blocks.entities;
 
 
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -19,6 +25,7 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ItemScatterer;
@@ -31,6 +38,7 @@ import timefall.goodtea.enums.TeaKettleSlots;
 import timefall.goodtea.recipes.TeaRecipe;
 import timefall.goodtea.registries.BlockEntitiesRegistry;
 import timefall.goodtea.registries.ItemsRegistry;
+import timefall.goodtea.registries.PacketsRegistry;
 import timefall.goodtea.screens.screenhandlers.TeaKettleScreenHandler;
 
 import java.util.List;
@@ -78,6 +86,30 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         }
     };
 
+    public final SingleVariantStorage<FluidVariant> fluidStorage = new SingleVariantStorage<>()
+    {
+
+        @Override
+        protected FluidVariant getBlankVariant() {
+            return FluidVariant.blank();
+        }
+
+        @Override
+        protected long getCapacity(FluidVariant variant) {
+            return FluidConstants.BUCKET;
+        }
+    };
+
+    public void setInventory(DefaultedList<ItemStack> inventory) {
+        for (int i = 0; i < inventory.size(); i++) {
+            this.inventory.set(i, inventory.get(i));
+        }
+    }
+
+    public void setFluidLevel(FluidVariant fluidVariant, long fluidLevel) {
+        this.fluidStorage.variant = fluidVariant;
+        this.fluidStorage.amount = fluidLevel;
+    }
 
     public TeaKettleBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntitiesRegistry.TEA_KETTLE_BLOCK_ENTITY, pos, state);
@@ -127,7 +159,7 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
 
     public void insertResults(Ingredient result) {
         List<ItemStack> itemStacks = List.of(result.getMatchingStacks());
-        for (int i = 0; i < 1 && i < itemStacks.size(); ++i) {
+        for (int i = 0; i < 1 && i < itemStacks.size(); i++) {
             int j = i + TeaKettleSlots.RESULT.ordinal();
             this.inventory.set(j, itemStacks.get(i).copy());
         }
@@ -136,6 +168,23 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
     public ItemStack getContainer() {
         return this.inventory.get(TeaKettleSlots.CONTAINER.ordinal());
     }
+
+    //@Override
+    //public void markDirty() {
+    //    if (!world.isClient()) {
+    //        PacketByteBuf data = PacketByteBufs.create();
+    //        data.writeInt(inventory.size());
+    //        for(int i = 0; i < inventory.size(); i++) {
+    //            data.writeItemStack(inventory.get(i));
+    //        }
+    //        data.writeBlockPos(getPos());
+
+    //        for (ServerPlayerEntity player : PlayerLookup.tracking((ServerWorld) world, getPos())) {
+    //            ServerPlayNetworking.send(player, PacketsRegistry.ITEM_SYNC, data);
+    //        }
+    //    }
+    //    super.markDirty();
+    //}
 
     @Override
     public DefaultedList<ItemStack> getItems() {
@@ -149,8 +198,13 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
 
     @Nullable
     @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        return new TeaKettleScreenHandler(syncId, inv, this, this.propertyDelegate);
+    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+        return new TeaKettleScreenHandler(
+                syncId,
+                playerInventory,
+                this,
+                this,
+                this.propertyDelegate);
     }
 
     @Override
@@ -158,6 +212,8 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         super.writeNbt(nbt);
         Inventories.writeNbt(nbt, inventory);
         nbt.putInt("tea_kettle.progress", progress);
+        nbt.put("tea_kettle.variant", fluidStorage.variant.toNbt());
+        nbt.putLong("tea_kettle.fluid", fluidStorage.amount);
     }
 
     @Override
@@ -165,6 +221,8 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         Inventories.readNbt(nbt, inventory);
         super.readNbt(nbt);
         progress = nbt.getInt("tea_kettle.progress");
+        fluidStorage.variant = FluidVariant.fromNbt((NbtCompound) nbt.get("tea_kettle.variant"));
+        fluidStorage.amount = nbt.getLong("tea_kettle.fluid");
     }
 
     private void resetProgress() {

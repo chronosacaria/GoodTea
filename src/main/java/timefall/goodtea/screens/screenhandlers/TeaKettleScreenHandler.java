@@ -1,5 +1,6 @@
 package timefall.goodtea.screens.screenhandlers;
 
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -10,33 +11,36 @@ import net.minecraft.screen.ArrayPropertyDelegate;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.util.math.BlockPos;
 import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
 import timefall.goodtea.enums.TeaKettleSlots;
 import timefall.goodtea.registries.ScreenHandlersRegistry;
+import timefall.goodtea.util.FluidStack;
 
 public class TeaKettleScreenHandler extends ScreenHandler {
     public final Inventory inventory;
     public PropertyDelegate propertyDelegate;
+    //public final TeaKettleBlockEntity blockEntity;
+    public FluidStack fluidStack;
 
-    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(TeaKettleBlockEntity.numberOfSlotsInTeaKettle), new ArrayPropertyDelegate(2));
-    }
 
-    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
-        this(syncId, playerInventory);
-        for (int i = 0; i < TeaKettleBlockEntity.numberOfSlotsInTeaKettle; i++) {
-            inventory.setStack(i, buf.readItemStack());
-        }
-        buf.readInt();
-    }
-    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate propertyDelegate) {
+
+    //public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory) {
+    //    this(syncId, playerInventory, new SimpleInventory(TeaKettleBlockEntity.numberOfSlotsInTeaKettle), new ArrayPropertyDelegate(2));
+    //}
+
+
+    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BlockEntity entity, PropertyDelegate propertyDelegate) {
         super(ScreenHandlersRegistry.TEA_KETTLE_SCREEN_HANDLER, syncId);
+
         checkDataCount(propertyDelegate, 2);
         this.propertyDelegate = propertyDelegate;
-        this. addProperties(propertyDelegate);
-        checkSize(inventory, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
+        this.addProperties(propertyDelegate);
         this.inventory = inventory;
         inventory.onOpen(playerInventory.player);
+        if (entity instanceof TeaKettleBlockEntity teaKettleBlockEntity)
+            this.fluidStack = new FluidStack(teaKettleBlockEntity.fluidStorage.variant, teaKettleBlockEntity.fluidStorage.amount);
+        checkSize(inventory, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
 
         int i, j;
         for(i = 0; i < 3; ++i) {
@@ -59,6 +63,22 @@ public class TeaKettleScreenHandler extends ScreenHandler {
         addProperties(propertyDelegate);
     }
 
+    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
+        this(
+                syncId,
+                playerInventory,
+                new SimpleInventory(TeaKettleBlockEntity.numberOfSlotsInTeaKettle),
+                playerInventory.player.getWorld().getBlockEntity(buf.readBlockPos()),
+                new ArrayPropertyDelegate(2));
+        for (int i = 0; i < TeaKettleBlockEntity.numberOfSlotsInTeaKettle; i++) {
+            inventory.setStack(i, buf.readItemStack());
+        }
+        buf.readInt();
+    }
+
+    public void setFluid(FluidStack stack) {
+        fluidStack = stack;
+    }
 
     public boolean isCrafting() {
         return propertyDelegate.get(0) > 0;
