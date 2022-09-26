@@ -73,4 +73,6 @@ public interface TeaKettleBlockEntityInventory extends Inventory {
     default boolean canPlayerUse(PlayerEntity player) {
         return true;
     }
+
+
 }

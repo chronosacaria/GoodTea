@@ -8,11 +8,13 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.inventory.SimpleInventory;
@@ -24,6 +26,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
@@ -40,12 +43,14 @@ import timefall.goodtea.registries.BlockEntitiesRegistry;
 import timefall.goodtea.registries.ItemsRegistry;
 import timefall.goodtea.registries.PacketsRegistry;
 import timefall.goodtea.screens.screenhandlers.TeaKettleScreenHandler;
+import timefall.goodtea.util.FluidStack;
 
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("UnstableApiUsage")
 public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, TeaKettleBlockEntityInventory, SidedInventory {
-    public static int numberOfSlotsInTeaKettle = 11;
+    public static int numberOfSlotsInTeaKettle = 12;
     private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(numberOfSlotsInTeaKettle, ItemStack.EMPTY);
     private Ingredient latestIngredient;
     private ItemStack latestContainer;
@@ -97,6 +102,14 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         @Override
         protected long getCapacity(FluidVariant variant) {
             return FluidConstants.BUCKET;
+        }
+
+        @Override
+        protected void onFinalCommit() {
+            markDirty();
+            if (!world.isClient()) {
+                sendFluidPacket();
+            }
         }
     };
 
@@ -199,12 +212,24 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
     @Nullable
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+        sendFluidPacket();
         return new TeaKettleScreenHandler(
                 syncId,
                 playerInventory,
                 this,
                 this,
                 this.propertyDelegate);
+    }
+
+    private void sendFluidPacket() {
+        PacketByteBuf data = PacketByteBufs.create();
+        fluidStorage.variant.toPacket(data);
+        data.writeLong(fluidStorage.amount);
+        data.writeBlockPos(getPos());
+
+        for (ServerPlayerEntity player : PlayerLookup.tracking((ServerWorld) world, getPos())) {
+            ServerPlayNetworking.send(player, PacketsRegistry.FLUID_SYNC, data);
+        }
     }
 
     @Override
@@ -236,34 +261,53 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
                 entity.progress++;
                 markDirty(world, blockPos, blockState);
             }
-            if (entity.getContainer().isOf(ItemsRegistry.TEA_CUP) && entity.getContainer().isOf(entity.latestContainer.getItem())
-                    && entity.getResults().get(0).isOf(Items.AIR) && entity.compareList(List.of(entity.latestIngredient.getMatchingStacks()),
-                    entity.getIngredient()) && entity.isOnLitObject()) {
+            if (entity.getContainer().isOf(ItemsRegistry.TEA_CUP)
+                    && entity.getContainer().isOf(entity.latestContainer.getItem())
+                    && entity.getResults().get(0).isOf(Items.AIR)
+                    && entity.compareList(List.of(entity.latestIngredient.getMatchingStacks()), entity.getIngredient())
+                    && entity.isOnLitObject()
+                    && entity.hasEnoughWater()) {
                 matchRecipe(world, entity);
                 entity.progress++;
                 if (entity.progress >= entity.maxProgress) {
                     entity.insertResults(entity.latestResult);
                     entity.removeIngredients();
+                    extractFluid(entity);
                 }
             } else {
                 entity.resetProgress();
                 markDirty(world, blockPos, blockState);
             }
+
+            if (hasFluidSourceInSlot(entity)) {
+                transferFluidToFluidStorage(entity);
+            }
         }
+    }
 
+    private static void extractFluid(TeaKettleBlockEntity entity) {
+        try(Transaction transaction = Transaction.openOuter()) {
+            entity.fluidStorage.extract(FluidVariant.of(Fluids.WATER),
+                    100, transaction);
+            transaction.commit();
+        }
+    }
 
+    private static void transferFluidToFluidStorage(TeaKettleBlockEntity entity) {
+        if (entity.fluidStorage.amount != FluidStack.convertDropletsToMb(FluidConstants.BUCKET)) {
+            try (Transaction transaction = Transaction.openOuter()) {
+                entity.fluidStorage.insert(
+                        FluidVariant.of(Fluids.WATER),
+                        FluidStack.convertDropletsToMb(FluidConstants.BUCKET) - entity.fluidStorage.amount,
+                        transaction);
+                transaction.commit();
+                entity.setStack(TeaKettleSlots.WATER_CONTAINER.ordinal(), new ItemStack(Items.BUCKET));
+            }
+        }
+    }
 
-        //if (world.isClient()) return;
-        //if (hasRecipe(entity) && entity.isOnLitObject()) {
-        //    entity.progress++;
-        //    markDirty(world, blockPos, blockState);
-        //    if (entity.progress >= entity.maxProgress) {
-        //        craftItem(entity);
-        //    }
-        //} else {
-        //    entity.resetProgress();
-        //    markDirty(world, blockPos, blockState);
-        //}
+    private static boolean hasFluidSourceInSlot(TeaKettleBlockEntity entity) {
+        return entity.getStack(TeaKettleSlots.WATER_CONTAINER.ordinal()).isOf(Items.WATER_BUCKET);
     }
 
     public static void matchRecipe(World world, TeaKettleBlockEntity teaKettleBlockEntity) {
@@ -336,6 +380,10 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         return this.world != null &&
                 (this.world.getBlockState(this.pos.down()).isOf(Blocks.FURNACE)
                         && this.world.getBlockState(this.pos.down()).get(Properties.LIT));
+    }
+
+    public boolean hasEnoughWater() {
+        return this.world != null && this.fluidStorage.amount >= 100;
     }
 
     public boolean compareList(List<ItemStack> itemStacks1, List<ItemStack> itemStacks2) {

@@ -19,6 +19,7 @@ import timefall.goodtea.util.MouseUtil;
 
 import java.util.Optional;
 
+@SuppressWarnings("UnstableApiUsage")
 @Environment(EnvType.CLIENT)
 public class TeaKettleScreen extends HandledScreen<TeaKettleScreenHandler> {
     private static final Identifier TEXTURE =
@@ -33,6 +34,7 @@ public class TeaKettleScreen extends HandledScreen<TeaKettleScreenHandler> {
     protected void init() {
         super.init();
         titleX = (backgroundWidth - textRenderer.getWidth(title)) / 2;
+        assignFluidStackRenderer();
     }
 
     private void assignFluidStackRenderer() {
@@ -64,10 +66,10 @@ public class TeaKettleScreen extends HandledScreen<TeaKettleScreenHandler> {
         int y = (height - backgroundHeight) / 2;
         drawTexture(matrices, x, y, 0, 0, backgroundWidth, backgroundHeight);
 
+        renderProgressArrow(matrices, x, y);
+
         fluidStackRenderer.drawFluid(matrices, handler.fluidStack, x + 83, y + 18, 16, 34,
                 FluidStack.convertDropletsToMb(FluidConstants.BUCKET));
-
-        renderProgressArrow(matrices, x, y);
     }
 
     private void renderProgressArrow(MatrixStack matrices, int x, int y) {

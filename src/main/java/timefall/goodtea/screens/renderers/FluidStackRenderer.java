@@ -27,6 +27,7 @@ import java.util.List;
 // CREDIT: https://github.com/mezz/JustEnoughItems by mezz (Forge Version)
 // HIGHLY EDITED VERSION FOR FABRIC by Kaupenjoe
 // Under MIT-License: https://github.com/mezz/JustEnoughItems/blob/1.18/LICENSE.txt
+@SuppressWarnings("UnstableApiUsage")
 public class FluidStackRenderer implements IIngredientRenderer<FluidStack> {
     private static final NumberFormat nf = NumberFormat.getIntegerInstance();
     public final long capacityMb;
@@ -69,57 +70,62 @@ public class FluidStackRenderer implements IIngredientRenderer<FluidStack> {
      * UNDER MIT LICENSE: https://github.com/TechReborn/TechReborn/blob/1.19/LICENSE.md
      */
     public void drawFluid(MatrixStack matrixStack, FluidStack fluid, int x, int y, int width, int height, long maxCapacity) {
-        if (fluid.getFluidVariant().getFluid() == Fluids.EMPTY) {
+        if (fluid != null && fluid.getFluidVariant().getFluid() == Fluids.EMPTY) {
             return;
         }
-        RenderSystem.setShaderTexture(0, PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
-        y += height;
-        final Sprite sprite = FluidVariantRendering.getSprite(fluid.getFluidVariant());
-        int color = FluidVariantRendering.getColor(fluid.getFluidVariant());
+        if (fluid != null) {
+            RenderSystem.setShaderTexture(0, PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
+            y += height;
+            final Sprite sprite = FluidVariantRendering.getSprite(fluid.getFluidVariant());
+            int color = FluidVariantRendering.getColor(fluid.getFluidVariant());
 
-        final int drawHeight = (int) (fluid.getAmount() / (maxCapacity * 1F) * height);
-        final int iconHeight = sprite.getHeight();
-        int offsetHeight = drawHeight;
+            final int drawHeight = (int) (fluid.getAmount() / (maxCapacity * 1F) * height);
+            final int iconHeight = sprite.getHeight();
+            int offsetHeight = drawHeight;
 
-        RenderSystem.setShaderColor((color >> 16 & 255) / 255.0F, (float) (color >> 8 & 255) / 255.0F, (float) (color & 255) / 255.0F, 1F);
+            RenderSystem.setShaderColor((color >> 16 & 255) / 255.0F, (float) (color >> 8 & 255) / 255.0F, (float) (color & 255) / 255.0F, 1F);
 
-        int iteration = 0;
-        while (offsetHeight != 0) {
-            final int curHeight = offsetHeight < iconHeight ? offsetHeight : iconHeight;
+            int iteration = 0;
+            while (offsetHeight != 0) {
+                final int curHeight = offsetHeight < iconHeight ? offsetHeight : iconHeight;
 
-            DrawableHelper.drawSprite(matrixStack, x, y - offsetHeight, 0, width, curHeight, sprite);
-            offsetHeight -= curHeight;
-            iteration++;
-            if (iteration > 50) {
-                break;
+                DrawableHelper.drawSprite(matrixStack, x, y - offsetHeight, 0, width, curHeight, sprite);
+                offsetHeight -= curHeight;
+                iteration++;
+                if (iteration > 50) {
+                    break;
+                }
             }
-        }
-        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+            RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
 
-        RenderSystem.setShaderTexture(0, FluidRenderHandlerRegistry.INSTANCE.get(fluid.getFluidVariant().getFluid())
-                .getFluidSprites(MinecraftClient.getInstance().world, null, fluid.getFluidVariant().getFluid().getDefaultState())[0].getId());
+            RenderSystem.setShaderTexture(0, FluidRenderHandlerRegistry.INSTANCE.get(fluid.getFluidVariant().getFluid())
+                    .getFluidSprites(MinecraftClient.getInstance().world, null, fluid.getFluidVariant().getFluid().getDefaultState())[0].getId());
+        }
     }
 
     @Override
     public List<Text> getTooltip(FluidStack fluidStack, TooltipContext tooltipFlag) {
         List<Text> tooltip = new ArrayList<>();
-        FluidVariant fluidType = fluidStack.getFluidVariant();
-        if (fluidType == null) {
+        if (fluidStack != null) {
+            FluidVariant fluidType = fluidStack.getFluidVariant();
+            if (fluidType == null) {
+                return tooltip;
+            }
+
+            MutableText displayName = Text.translatable("block." + Registry.FLUID.getId(fluidStack.fluidVariant.getFluid()).toTranslationKey());
+            tooltip.add(displayName);
+
+            long amount = fluidStack.getAmount();
+            if (tooltipMode == TooltipMode.SHOW_AMOUNT_AND_CAPACITY) {
+                MutableText amountString = Text.translatable("goodtea.tooltip.liquid.amount.with.capacity", nf.format(amount), nf.format(capacityMb));
+                tooltip.add(amountString.fillStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)));
+            } else if (tooltipMode == TooltipMode.SHOW_AMOUNT) {
+                MutableText amountString = Text.translatable("goodtea.tooltip.liquid.amount", nf.format(amount));
+                tooltip.add(amountString.fillStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)));
+            }
+
             return tooltip;
         }
-
-        MutableText displayName = Text.translatable("block." + Registry.FLUID.getId(fluidStack.fluidVariant.getFluid()).toTranslationKey());
-        tooltip.add(displayName);
-
-        long amount = fluidStack.getAmount();
-        if (tooltipMode == TooltipMode.SHOW_AMOUNT_AND_CAPACITY) {
-            MutableText amountString = Text.translatable("tutorialmod.tooltip.liquid.amount.with.capacity", nf.format(amount), nf.format(capacityMb));
-            tooltip.add(amountString.fillStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)));
-        } else if (tooltipMode == TooltipMode.SHOW_AMOUNT) {
-            MutableText amountString = Text.translatable("tutorialmod.tooltip.liquid.amount", nf.format(amount));
-            tooltip.add(amountString.fillStyle(Style.EMPTY.withColor(Formatting.DARK_GRAY)));
-        }
-
         return tooltip;
     }
 
