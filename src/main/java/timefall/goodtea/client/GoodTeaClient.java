@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.render.RenderLayer;
 import timefall.goodtea.registries.BlocksRegistry;
+import timefall.goodtea.registries.PacketsRegistry;
 import timefall.goodtea.registries.ScreenHandlersRegistry;
 import timefall.goodtea.screens.TeaKettleScreen;
 
@@ -13,8 +14,10 @@ import timefall.goodtea.screens.TeaKettleScreen;
 public class GoodTeaClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        PacketsRegistry.registerS2CPackets();
         HandledScreens.register(ScreenHandlersRegistry.TEA_KETTLE_SCREEN_HANDLER, TeaKettleScreen::new);
 
         BlockRenderLayerMap.INSTANCE.putBlock(BlocksRegistry.TEA_KETTLE_BLOCK, RenderLayer.getCutout());
+
     }
 }

@@ -182,23 +182,6 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         return this.inventory.get(TeaKettleSlots.CONTAINER.ordinal());
     }
 
-    //@Override
-    //public void markDirty() {
-    //    if (!world.isClient()) {
-    //        PacketByteBuf data = PacketByteBufs.create();
-    //        data.writeInt(inventory.size());
-    //        for(int i = 0; i < inventory.size(); i++) {
-    //            data.writeItemStack(inventory.get(i));
-    //        }
-    //        data.writeBlockPos(getPos());
-
-    //        for (ServerPlayerEntity player : PlayerLookup.tracking((ServerWorld) world, getPos())) {
-    //            ServerPlayNetworking.send(player, PacketsRegistry.ITEM_SYNC, data);
-    //        }
-    //    }
-    //    super.markDirty();
-    //}
-
     @Override
     public DefaultedList<ItemStack> getItems() {
         return this.inventory;
@@ -243,8 +226,8 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
 
     @Override
     public void readNbt(NbtCompound nbt) {
-        Inventories.readNbt(nbt, inventory);
         super.readNbt(nbt);
+        Inventories.readNbt(nbt, inventory);
         progress = nbt.getInt("tea_kettle.progress");
         fluidStorage.variant = FluidVariant.fromNbt((NbtCompound) nbt.get("tea_kettle.variant"));
         fluidStorage.amount = nbt.getLong("tea_kettle.fluid");
@@ -273,6 +256,7 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
                     entity.insertResults(entity.latestResult);
                     entity.removeIngredients();
                     extractFluid(entity);
+                    markDirty(world, blockPos, blockState);
                 }
             } else {
                 entity.resetProgress();
@@ -281,6 +265,7 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
 
             if (hasFluidSourceInSlot(entity)) {
                 transferFluidToFluidStorage(entity);
+                markDirty(world, blockPos, blockState);
             }
         }
     }

@@ -22,6 +22,7 @@ public class TeaKettleScreenHandler extends ScreenHandler {
     public PropertyDelegate propertyDelegate;
     public FluidStack fluidStack;
 
+
     public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BlockEntity entity, PropertyDelegate propertyDelegate) {
         super(ScreenHandlersRegistry.TEA_KETTLE_SCREEN_HANDLER, syncId);
         checkSize(inventory, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
