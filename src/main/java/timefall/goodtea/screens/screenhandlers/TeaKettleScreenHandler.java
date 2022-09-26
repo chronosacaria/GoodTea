@@ -1,9 +1,9 @@
 package timefall.goodtea.screens.screenhandlers;
 
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ArrayPropertyDelegate;
@@ -13,30 +13,25 @@ import net.minecraft.screen.slot.Slot;
 import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
 import timefall.goodtea.enums.TeaKettleSlots;
 import timefall.goodtea.registries.ScreenHandlersRegistry;
+import timefall.goodtea.util.FluidStack;
 
+@SuppressWarnings("UnstableApiUsage")
 public class TeaKettleScreenHandler extends ScreenHandler {
     public final Inventory inventory;
     public PropertyDelegate propertyDelegate;
+    public FluidStack fluidStack;
 
-    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(TeaKettleBlockEntity.numberOfSlotsInTeaKettle), new ArrayPropertyDelegate(2));
-    }
-
-    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
-        this(syncId, playerInventory);
-        for (int i = 0; i < TeaKettleBlockEntity.numberOfSlotsInTeaKettle; i++) {
-            inventory.setStack(i, buf.readItemStack());
-        }
-        buf.readInt();
-    }
-    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate propertyDelegate) {
+    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, BlockEntity entity, PropertyDelegate propertyDelegate) {
         super(ScreenHandlersRegistry.TEA_KETTLE_SCREEN_HANDLER, syncId);
+        checkSize((Inventory) entity, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
         checkDataCount(propertyDelegate, 2);
         this.propertyDelegate = propertyDelegate;
-        this. addProperties(propertyDelegate);
-        checkSize(inventory, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
-        this.inventory = inventory;
+        this.addProperties(propertyDelegate);
+        this.inventory = (Inventory) entity;
         inventory.onOpen(playerInventory.player);
+        if (entity instanceof TeaKettleBlockEntity teaKettleBlockEntity) {
+            this.fluidStack = new FluidStack(teaKettleBlockEntity.fluidStorage.variant, teaKettleBlockEntity.fluidStorage.amount);
+        }
 
         int i, j;
         for(i = 0; i < 3; ++i) {
@@ -45,13 +40,11 @@ public class TeaKettleScreenHandler extends ScreenHandler {
             }
         }
 
+        this.addSlot(new Slot(inventory, TeaKettleSlots.WATER_CONTAINER.ordinal(), 83, 18));
+
         this.addSlot(new Slot(inventory, TeaKettleSlots.CONTAINER.ordinal(), 83, 54));
 
         this.addSlot(new Slot(inventory, TeaKettleSlots.RESULT.ordinal(), 130  + 5, 30 + 5));
-
-
-
-        this.propertyDelegate = propertyDelegate;
 
         addPlayerInventory(playerInventory);
         addPlayerHotbar(playerInventory);
@@ -59,6 +52,26 @@ public class TeaKettleScreenHandler extends ScreenHandler {
         addProperties(propertyDelegate);
     }
 
+    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
+        this(
+                syncId,
+                playerInventory,
+                resolveBlockEntity(playerInventory, buf),
+                new ArrayPropertyDelegate(2));
+
+    }
+
+    private static TeaKettleBlockEntity resolveBlockEntity(PlayerInventory playerInventory, PacketByteBuf buf) {
+        var getPos = buf.readBlockPos();
+        var blockEntity = playerInventory.player.getWorld().getBlockEntity(getPos);
+        System.out.println(getPos);
+        System.out.println(blockEntity);
+        return (TeaKettleBlockEntity) blockEntity;
+    }
+
+    public void setFluid(FluidStack stack) {
+        fluidStack = stack;
+    }
 
     public boolean isCrafting() {
         return propertyDelegate.get(0) > 0;
@@ -69,7 +82,7 @@ public class TeaKettleScreenHandler extends ScreenHandler {
         int maxProgress = this.propertyDelegate.get(1);
         int progressArrowSize = 23;
 
-        return maxProgress !=0 && progress != 0 ? progress * progressArrowSize / maxProgress : 0;
+        return maxProgress != 0 && progress != 0 ? progress * progressArrowSize / maxProgress : 0;
     }
 
     @Override
