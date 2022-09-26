@@ -16,7 +16,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.SidedInventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -26,7 +25,6 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
@@ -49,7 +47,7 @@ import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings("UnstableApiUsage")
-public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, TeaKettleBlockEntityInventory, SidedInventory {
+public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, IImplementedInventory {
     public static int numberOfSlotsInTeaKettle = 12;
     private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(numberOfSlotsInTeaKettle, ItemStack.EMPTY);
     private Ingredient latestIngredient;
@@ -60,10 +58,7 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
 
     @Override
     public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-        for (ItemStack stack : inventory) {
-            buf.writeItemStack(stack);
-        }
-        buf.writeInt(progress);
+        buf.writeBlockPos(pos);
     }
 
 
@@ -199,7 +194,6 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         return new TeaKettleScreenHandler(
                 syncId,
                 playerInventory,
-                this,
                 this,
                 this.propertyDelegate);
     }

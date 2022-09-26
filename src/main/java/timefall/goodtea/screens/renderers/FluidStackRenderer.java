@@ -70,37 +70,35 @@ public class FluidStackRenderer implements IIngredientRenderer<FluidStack> {
      * UNDER MIT LICENSE: https://github.com/TechReborn/TechReborn/blob/1.19/LICENSE.md
      */
     public void drawFluid(MatrixStack matrixStack, FluidStack fluid, int x, int y, int width, int height, long maxCapacity) {
-        if (fluid != null && fluid.getFluidVariant().getFluid() == Fluids.EMPTY) {
+        if (fluid.getFluidVariant().getFluid() == Fluids.EMPTY) {
             return;
         }
-        if (fluid != null) {
-            RenderSystem.setShaderTexture(0, PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
-            y += height;
-            final Sprite sprite = FluidVariantRendering.getSprite(fluid.getFluidVariant());
-            int color = FluidVariantRendering.getColor(fluid.getFluidVariant());
+        RenderSystem.setShaderTexture(0, PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
+        y += height;
+        final Sprite sprite = FluidVariantRendering.getSprite(fluid.getFluidVariant());
+        int color = FluidVariantRendering.getColor(fluid.getFluidVariant());
 
-            final int drawHeight = (int) (fluid.getAmount() / (maxCapacity * 1F) * height);
-            final int iconHeight = sprite.getHeight();
-            int offsetHeight = drawHeight;
+        final int drawHeight = (int) (fluid.getAmount() / (maxCapacity * 1F) * height);
+        final int iconHeight = sprite.getHeight();
+        int offsetHeight = drawHeight;
 
-            RenderSystem.setShaderColor((color >> 16 & 255) / 255.0F, (float) (color >> 8 & 255) / 255.0F, (float) (color & 255) / 255.0F, 1F);
+        RenderSystem.setShaderColor((color >> 16 & 255) / 255.0F, (float) (color >> 8 & 255) / 255.0F, (float) (color & 255) / 255.0F, 1F);
 
-            int iteration = 0;
-            while (offsetHeight != 0) {
-                final int curHeight = offsetHeight < iconHeight ? offsetHeight : iconHeight;
+        int iteration = 0;
+        while (offsetHeight != 0) {
+            final int curHeight = offsetHeight < iconHeight ? offsetHeight : iconHeight;
 
-                DrawableHelper.drawSprite(matrixStack, x, y - offsetHeight, 0, width, curHeight, sprite);
-                offsetHeight -= curHeight;
-                iteration++;
-                if (iteration > 50) {
-                    break;
-                }
+            DrawableHelper.drawSprite(matrixStack, x, y - offsetHeight, 0, width, curHeight, sprite);
+            offsetHeight -= curHeight;
+            iteration++;
+            if (iteration > 50) {
+                break;
             }
-            RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-
-            RenderSystem.setShaderTexture(0, FluidRenderHandlerRegistry.INSTANCE.get(fluid.getFluidVariant().getFluid())
-                    .getFluidSprites(MinecraftClient.getInstance().world, null, fluid.getFluidVariant().getFluid().getDefaultState())[0].getId());
         }
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+
+        RenderSystem.setShaderTexture(0, FluidRenderHandlerRegistry.INSTANCE.get(fluid.getFluidVariant().getFluid())
+                .getFluidSprites(MinecraftClient.getInstance().world, null, fluid.getFluidVariant().getFluid().getDefaultState())[0].getId());
     }
 
     @Override

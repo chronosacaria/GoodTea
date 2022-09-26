@@ -4,7 +4,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ArrayPropertyDelegate;
@@ -22,14 +21,13 @@ public class TeaKettleScreenHandler extends ScreenHandler {
     public PropertyDelegate propertyDelegate;
     public FluidStack fluidStack;
 
-
-    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BlockEntity entity, PropertyDelegate propertyDelegate) {
+    public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, BlockEntity entity, PropertyDelegate propertyDelegate) {
         super(ScreenHandlersRegistry.TEA_KETTLE_SCREEN_HANDLER, syncId);
-        checkSize(inventory, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
+        checkSize((Inventory) entity, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
         checkDataCount(propertyDelegate, 2);
         this.propertyDelegate = propertyDelegate;
         this.addProperties(propertyDelegate);
-        this.inventory = inventory;
+        this.inventory = (Inventory) entity;
         inventory.onOpen(playerInventory.player);
         if (entity instanceof TeaKettleBlockEntity teaKettleBlockEntity) {
             this.fluidStack = new FluidStack(teaKettleBlockEntity.fluidStorage.variant, teaKettleBlockEntity.fluidStorage.amount);
@@ -58,13 +56,17 @@ public class TeaKettleScreenHandler extends ScreenHandler {
         this(
                 syncId,
                 playerInventory,
-                new SimpleInventory(TeaKettleBlockEntity.numberOfSlotsInTeaKettle),
-                playerInventory.player.getWorld().getBlockEntity(buf.readBlockPos()),
+                resolveBlockEntity(playerInventory, buf),
                 new ArrayPropertyDelegate(2));
-        //for (int i = 0; i < TeaKettleBlockEntity.numberOfSlotsInTeaKettle; i++) {
-        //    inventory.setStack(i, buf.readItemStack());
-        //}
-        buf.readInt();
+
+    }
+
+    private static TeaKettleBlockEntity resolveBlockEntity(PlayerInventory playerInventory, PacketByteBuf buf) {
+        var getPos = buf.readBlockPos();
+        var blockEntity = playerInventory.player.getWorld().getBlockEntity(getPos);
+        System.out.println(getPos);
+        System.out.println(blockEntity);
+        return (TeaKettleBlockEntity) blockEntity;
     }
 
     public void setFluid(FluidStack stack) {
@@ -80,7 +82,7 @@ public class TeaKettleScreenHandler extends ScreenHandler {
         int maxProgress = this.propertyDelegate.get(1);
         int progressArrowSize = 23;
 
-        return maxProgress !=0 && progress != 0 ? progress * progressArrowSize / maxProgress : 0;
+        return maxProgress != 0 && progress != 0 ? progress * progressArrowSize / maxProgress : 0;
     }
 
     @Override
