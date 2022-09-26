@@ -11,36 +11,28 @@ import net.minecraft.screen.ArrayPropertyDelegate;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.math.BlockPos;
 import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
 import timefall.goodtea.enums.TeaKettleSlots;
 import timefall.goodtea.registries.ScreenHandlersRegistry;
 import timefall.goodtea.util.FluidStack;
 
+@SuppressWarnings("UnstableApiUsage")
 public class TeaKettleScreenHandler extends ScreenHandler {
     public final Inventory inventory;
     public PropertyDelegate propertyDelegate;
-    //public final TeaKettleBlockEntity blockEntity;
     public FluidStack fluidStack;
-
-
-
-    //public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory) {
-    //    this(syncId, playerInventory, new SimpleInventory(TeaKettleBlockEntity.numberOfSlotsInTeaKettle), new ArrayPropertyDelegate(2));
-    //}
-
 
     public TeaKettleScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, BlockEntity entity, PropertyDelegate propertyDelegate) {
         super(ScreenHandlersRegistry.TEA_KETTLE_SCREEN_HANDLER, syncId);
-
+        checkSize(inventory, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
         checkDataCount(propertyDelegate, 2);
         this.propertyDelegate = propertyDelegate;
         this.addProperties(propertyDelegate);
         this.inventory = inventory;
         inventory.onOpen(playerInventory.player);
-        if (entity instanceof TeaKettleBlockEntity teaKettleBlockEntity)
+        if (entity instanceof TeaKettleBlockEntity teaKettleBlockEntity) {
             this.fluidStack = new FluidStack(teaKettleBlockEntity.fluidStorage.variant, teaKettleBlockEntity.fluidStorage.amount);
-        checkSize(inventory, TeaKettleBlockEntity.numberOfSlotsInTeaKettle);
+        }
 
         int i, j;
         for(i = 0; i < 3; ++i) {
@@ -49,13 +41,11 @@ public class TeaKettleScreenHandler extends ScreenHandler {
             }
         }
 
+        this.addSlot(new Slot(inventory, TeaKettleSlots.WATER_CONTAINER.ordinal(), 83, 18));
+
         this.addSlot(new Slot(inventory, TeaKettleSlots.CONTAINER.ordinal(), 83, 54));
 
         this.addSlot(new Slot(inventory, TeaKettleSlots.RESULT.ordinal(), 130  + 5, 30 + 5));
-
-
-
-        this.propertyDelegate = propertyDelegate;
 
         addPlayerInventory(playerInventory);
         addPlayerHotbar(playerInventory);
@@ -70,9 +60,9 @@ public class TeaKettleScreenHandler extends ScreenHandler {
                 new SimpleInventory(TeaKettleBlockEntity.numberOfSlotsInTeaKettle),
                 playerInventory.player.getWorld().getBlockEntity(buf.readBlockPos()),
                 new ArrayPropertyDelegate(2));
-        for (int i = 0; i < TeaKettleBlockEntity.numberOfSlotsInTeaKettle; i++) {
-            inventory.setStack(i, buf.readItemStack());
-        }
+        //for (int i = 0; i < TeaKettleBlockEntity.numberOfSlotsInTeaKettle; i++) {
+        //    inventory.setStack(i, buf.readItemStack());
+        //}
         buf.readInt();
     }
 
