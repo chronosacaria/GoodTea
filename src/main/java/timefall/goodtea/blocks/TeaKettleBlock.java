@@ -1,12 +1,18 @@
 package timefall.goodtea.blocks;
 
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.state.StateManager;
@@ -21,6 +27,8 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
 import timefall.goodtea.registries.BlockEntitiesRegistry;
+import timefall.goodtea.util.FluidStack;
+
 @SuppressWarnings("deprecation")
 public class TeaKettleBlock extends BlockWithEntity{
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
@@ -78,13 +86,28 @@ public class TeaKettleBlock extends BlockWithEntity{
         }
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (!world.isClient) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
             NamedScreenHandlerFactory namedScreenHandlerFactory = state.createScreenHandlerFactory(world, pos);
 
-            if (namedScreenHandlerFactory != null) {
-                player.openHandledScreen(namedScreenHandlerFactory);
+            if (blockEntity instanceof TeaKettleBlockEntity teaKettleBlockEntity) {
+                ItemStack itemStack = player.getStackInHand(hand);
+                if (itemStack.isOf(Items.WATER_BUCKET) && teaKettleBlockEntity.fluidStorage.amount != FluidStack.convertDropletsToMb(FluidConstants.BUCKET)) {
+                    try (Transaction transaction = Transaction.openOuter()) {
+                        teaKettleBlockEntity.fluidStorage.insert(
+                                FluidVariant.of(Fluids.WATER),
+                                FluidStack.convertDropletsToMb(FluidConstants.BUCKET) - teaKettleBlockEntity.fluidStorage.amount,
+                                transaction
+                        );
+                        transaction.commit();
+                        player.setStackInHand(hand, Items.BUCKET.getDefaultStack());
+                    }
+                } else if (namedScreenHandlerFactory != null) {
+                    player.openHandledScreen(namedScreenHandlerFactory);
+                }
             }
         }
         return ActionResult.SUCCESS;

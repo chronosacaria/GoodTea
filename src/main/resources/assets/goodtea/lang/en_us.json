@@ -1,5 +1,8 @@
 {
   "item.goodtea.spearmint_seeds": "Spearmint Seeds",
 
-  "block.goodtea.spearmint": "Spearmint"
+  "block.goodtea.spearmint": "Spearmint",
+
+  "goodtea.tooltip.liquid.amount.with.capacity": "%s / %s mB",
+  "goodtea.tooltip.liquid.amount": "%s mB"
 }

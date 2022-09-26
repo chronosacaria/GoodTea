@@ -40,8 +40,6 @@ public class TeaKettleScreenHandler extends ScreenHandler {
             }
         }
 
-        this.addSlot(new Slot(inventory, TeaKettleSlots.WATER_CONTAINER.ordinal(), 83, 18));
-
         this.addSlot(new Slot(inventory, TeaKettleSlots.CONTAINER.ordinal(), 83, 54));
 
         this.addSlot(new Slot(inventory, TeaKettleSlots.RESULT.ordinal(), 130  + 5, 30 + 5));
@@ -64,8 +62,6 @@ public class TeaKettleScreenHandler extends ScreenHandler {
     private static TeaKettleBlockEntity resolveBlockEntity(PlayerInventory playerInventory, PacketByteBuf buf) {
         var getPos = buf.readBlockPos();
         var blockEntity = playerInventory.player.getWorld().getBlockEntity(getPos);
-        System.out.println(getPos);
-        System.out.println(blockEntity);
         return (TeaKettleBlockEntity) blockEntity;
     }
 

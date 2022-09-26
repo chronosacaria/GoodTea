@@ -46,12 +46,12 @@ public class TeaKettleScreen extends HandledScreen<TeaKettleScreenHandler> {
     protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
         int x = (width - backgroundWidth) / 2;
         int y = (height - backgroundHeight) / 2;
-        renderFluidTooltip(matrices, mouseX, mouseY, x, y, handler.fluidStack, 55, 15, fluidStackRenderer);
+        renderFluidTooltip(matrices, mouseX, mouseY, x, y, handler.fluidStack, fluidStackRenderer);
     }
 
     private void renderFluidTooltip(MatrixStack matrices, int mouseX, int mouseY, int x, int y,
-                                    FluidStack fluidStack, int offsetX, int offsetY, FluidStackRenderer renderer) {
-        if(isMouseAboveArea(mouseX, mouseY, x, y, offsetX, offsetY, renderer)) {
+                                    FluidStack fluidStack, FluidStackRenderer renderer) {
+        if(isMouseAboveArea(mouseX, mouseY, x, y, renderer) && fluidStack.amount > 0) {
             renderTooltip(matrices, renderer.getTooltip(fluidStack, TooltipContext.Default.NORMAL),
                     Optional.empty(), mouseX - x, mouseY - y);
         }
@@ -85,7 +85,7 @@ public class TeaKettleScreen extends HandledScreen<TeaKettleScreenHandler> {
         drawMouseoverTooltip(matrices, mouseX, mouseY);
     }
 
-    private boolean isMouseAboveArea(int pMouseX, int pMouseY, int x, int y, int offsetX, int offsetY, FluidStackRenderer renderer) {
-        return MouseUtil.isMouseOver(pMouseX, pMouseY, x + offsetX, y + offsetY, renderer.getWidth(), renderer.getHeight());
+    private boolean isMouseAboveArea(int pMouseX, int pMouseY, int x, int y, FluidStackRenderer renderer) {
+        return MouseUtil.isMouseOver(pMouseX, pMouseY, x + 83, y + 15, renderer.getWidth(), renderer.getHeight());
     }
 }

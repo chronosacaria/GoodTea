@@ -48,7 +48,7 @@ import java.util.Optional;
 
 @SuppressWarnings("UnstableApiUsage")
 public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, IImplementedInventory {
-    public static int numberOfSlotsInTeaKettle = 12;
+    public static int numberOfSlotsInTeaKettle = 11;
     private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(numberOfSlotsInTeaKettle, ItemStack.EMPTY);
     private Ingredient latestIngredient;
     private ItemStack latestContainer;
@@ -256,11 +256,6 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
                 entity.resetProgress();
                 markDirty(world, blockPos, blockState);
             }
-
-            if (hasFluidSourceInSlot(entity)) {
-                transferFluidToFluidStorage(entity);
-                markDirty(world, blockPos, blockState);
-            }
         }
     }
 
@@ -272,7 +267,7 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
         }
     }
 
-    private static void transferFluidToFluidStorage(TeaKettleBlockEntity entity) {
+    public static void transferFluidToFluidStorage(TeaKettleBlockEntity entity) {
         if (entity.fluidStorage.amount != FluidStack.convertDropletsToMb(FluidConstants.BUCKET)) {
             try (Transaction transaction = Transaction.openOuter()) {
                 entity.fluidStorage.insert(
@@ -405,21 +400,4 @@ public class TeaKettleBlockEntity extends BlockEntity implements ExtendedScreenH
     public boolean canExtract(int slot, ItemStack stack, Direction dir) {
         return true;
     }
-
-//    private static boolean hasTeaIngredientsInCraftingSlots(DefaultedList<ItemStack> slots) {
-//        ItemStack itemStack = slots.get(9);
-//        if (itemStack.isEmpty())
-//            return false;
-//        else if (!TeaRecipeRegistry.isValidIngredient(itemStack))
-//            return false;
-//        else {
-//            for (int i = 0; i < 9; ++i) {
-//                ItemStack itemStack2 = slots.get(i);
-//                if (!itemStack2.isEmpty() && TeaRecipeRegistry.hasRecipe(itemStack2, itemStack)) {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//    }
 }
