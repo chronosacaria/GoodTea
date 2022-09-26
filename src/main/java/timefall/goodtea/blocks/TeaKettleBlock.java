@@ -3,7 +3,10 @@ package timefall.goodtea.blocks;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
@@ -13,6 +16,8 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.state.StateManager;
@@ -21,8 +26,7 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
@@ -33,21 +37,21 @@ import timefall.goodtea.util.FluidStack;
 public class TeaKettleBlock extends BlockWithEntity{
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
 
+    //public static final VoxelShape MAIN_SHAPE =
+    //public static final VoxelShape NORTH_SHAPE =
+    //public static final VoxelShape EAST_SHAPE =
+    //public static final VoxelShape SOUTH_SHAPE =
+    //public static final VoxelShape WEST_SHAPE =
+
+
     public TeaKettleBlock(Settings settings) {
         super(settings);
+        this.setDefaultState(this.getStateManager().getDefaultState().with(FACING, Direction.NORTH));
     }
 
-    private static VoxelShape SHAPE = Block.createCuboidShape(0,0,0,16,10,16);
-
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return SHAPE;
-    }
-
-    @Nullable
-    @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getPlayerFacing().getOpposite());
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        builder.add(FACING);
     }
 
     @Override
@@ -61,16 +65,52 @@ public class TeaKettleBlock extends BlockWithEntity{
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
-    }
-
-    /* BLOCK ENTITY STUFF */
-
-    @Override
     public BlockRenderType getRenderType(BlockState state) {
         return BlockRenderType.MODEL;
     }
+
+    //@Override
+    //public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    //    return this.getShape(state);
+    //}
+
+    //@Override
+    //public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    //    return this.getShape(state);
+    //}
+
+    //private VoxelShape getShape(BlockState state) {
+    //    return switch(state.get(FACING)) {
+    //        default -> NORTH_SHAPE;
+    //        case EAST -> EAST_SHAPE;
+    //        case SOUTH -> SOUTH_SHAPE;
+    //        case WEST -> WEST_SHAPE;
+    //    };
+    //}
+
+
+
+
+    /* BLOCK ENTITY STUFF */
+
+    @Nullable
+    @Override
+    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return new TeaKettleBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+        return checkType(type, BlockEntitiesRegistry.TEA_KETTLE_BLOCK_ENTITY, TeaKettleBlockEntity::tick);
+    }
+
+    @Nullable
+    @Override
+    public BlockState getPlacementState(ItemPlacementContext ctx) {
+        return this.getDefaultState().with(FACING, ctx.getPlayerFacing());
+    }
+
 
     @Override
     public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
@@ -105,7 +145,22 @@ public class TeaKettleBlock extends BlockWithEntity{
                         transaction.commit();
                         player.setStackInHand(hand, Items.BUCKET.getDefaultStack());
                     }
-                } else if (namedScreenHandlerFactory != null) {
+                }
+
+                // TODO: ASK AMPHIBATRON ABOUT HOW THESE MATHS NEED TO BE
+                //if ((itemStack.isOf(Items.POTION) && PotionUtil.getPotion(itemStack) == Potions.WATER) && teaKettleBlockEntity.fluidStorage.amount != FluidStack.convertDropletsToMb(FluidConstants.BUCKET)) {
+                //    try (Transaction transaction = Transaction.openOuter()) {
+                //        teaKettleBlockEntity.fluidStorage.insert(
+                //                FluidVariant.of(Fluids.WATER),
+                //                (FluidStack.convertDropletsToMb(FluidConstants.BUCKET) / 3) - teaKettleBlockEntity.fluidStorage.amount,
+                //                transaction
+                //        );
+                //        transaction.commit();
+                //        player.setStackInHand(hand, Items.GLASS_BOTTLE.getDefaultStack());
+                //    }
+                //}
+
+                if (!(itemStack.isOf(Items.WATER_BUCKET) || (itemStack.isOf(Items.POTION) && PotionUtil.getPotion(itemStack) == Potions.WATER)) && namedScreenHandlerFactory != null) {
                     player.openHandledScreen(namedScreenHandlerFactory);
                 }
             }
@@ -116,17 +171,5 @@ public class TeaKettleBlock extends BlockWithEntity{
     @Override
     public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
         return ScreenHandler.calculateComparatorOutput(world.getBlockEntity(pos));
-    }
-
-    @Nullable
-    @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-        return new TeaKettleBlockEntity(pos, state);
-    }
-
-    @Nullable
-    @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return checkType(type, BlockEntitiesRegistry.TEA_KETTLE_BLOCK_ENTITY, TeaKettleBlockEntity::tick);
     }
 }
