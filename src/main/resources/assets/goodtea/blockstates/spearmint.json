@@ -1,12 +1,7 @@
 {
   "variants": {
-    "age=0": { "model": "goodtea:block/mint/mint0" },
-    "age=1": { "model": "goodtea:block/mint/mint1" },
-    "age=2": { "model": "goodtea:block/mint/mint2" },
-    "age=3": { "model": "goodtea:block/mint/mint3" },
-    "age=4": { "model": "goodtea:block/mint/mint4" },
-    "age=5": { "model": "goodtea:block/mint/mint5" },
-    "age=6": { "model": "goodtea:block/mint/mint6" },
-    "age=7": { "model": "goodtea:block/mint/mint7" }
+    "age=0": { "model": "goodtea:block/spearmint/spearmint0" },
+    "age=1": { "model": "goodtea:block/spearmint/spearmint1" },
+    "age=2": { "model": "goodtea:block/spearmint/spearmint2" }
   }
 }

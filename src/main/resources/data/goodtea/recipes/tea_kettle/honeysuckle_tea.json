@@ -1,0 +1,18 @@
+{
+  "type": "goodtea:tea_brewing",
+  "ingredient": [
+    {"item": "goodtea:rosebud"},
+    {"item": "goodtea:rosebud"},
+    {"item": "goodtea:rosebud"},
+    {"item": "goodtea:honeysuckle_flower_bud"},
+    {"item": "goodtea:honeysuckle_flower_bud"},
+    {"item": "goodtea:honeysuckle_flower_bud"},
+    {"item": "goodtea:honeysuckle_flower_bud"},
+    {"item": "goodtea:honeysuckle_flower_bud"},
+    {"item": "goodtea:honeysuckle_flower_bud"}
+  ],
+  "container": "goodtea:tea_cup",
+  "result": [
+    {"item": "goodtea:honeysuckle_rosebud_tea"}
+  ]
+}
