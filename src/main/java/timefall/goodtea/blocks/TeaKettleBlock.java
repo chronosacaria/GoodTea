@@ -3,10 +3,7 @@ package timefall.goodtea.blocks;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
@@ -27,6 +24,9 @@ import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import timefall.goodtea.blocks.entities.TeaKettleBlockEntity;
@@ -37,12 +37,29 @@ import timefall.goodtea.util.FluidStack;
 public class TeaKettleBlock extends BlockWithEntity{
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
 
-    //public static final VoxelShape MAIN_SHAPE =
-    //public static final VoxelShape NORTH_SHAPE =
-    //public static final VoxelShape EAST_SHAPE =
-    //public static final VoxelShape SOUTH_SHAPE =
-    //public static final VoxelShape WEST_SHAPE =
-
+    private VoxelShape shape() {
+        return VoxelShapes.union(
+                VoxelShapes.cuboid(5,0,5,11,5,11),
+                VoxelShapes.cuboid(4,0,6,5,4,10),
+                VoxelShapes.cuboid(11,0,6,12,4,10),
+                VoxelShapes.cuboid(6,0,11,10,4,12),
+                VoxelShapes.cuboid(6,0,4,10,4,5),
+                VoxelShapes.cuboid(6,5,6,10,6,10),
+                VoxelShapes.cuboid(7,8,5,8,9,6),
+                VoxelShapes.cuboid(8,8,10,9,9,11),
+                VoxelShapes.cuboid(7,8,9,8,9,11),
+                VoxelShapes.cuboid(8,8,5,9,9,7),
+                VoxelShapes.cuboid(7,8,6,8,9,9),
+                VoxelShapes.cuboid(8,8,7,9,9,10),
+                VoxelShapes.cuboid(7,4,2,9,5,3),
+                VoxelShapes.cuboid(7,3,3,9,5,4),
+                VoxelShapes.cuboid(8,4,4,9,5,5),
+                VoxelShapes.cuboid(8,4,11,9,7,12),
+                VoxelShapes.cuboid(7,4,4,8,7,5),
+                VoxelShapes.cuboid(8,6,10,9,8,11),
+                VoxelShapes.cuboid(7,6,5,8,8,6)
+        );
+    }
 
     public TeaKettleBlock(Settings settings) {
         super(settings);
@@ -69,24 +86,15 @@ public class TeaKettleBlock extends BlockWithEntity{
         return BlockRenderType.MODEL;
     }
 
-    //@Override
-    //public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-    //    return this.getShape(state);
-    //}
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return shape();
+    }
 
-    //@Override
-    //public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-    //    return this.getShape(state);
-    //}
-
-    //private VoxelShape getShape(BlockState state) {
-    //    return switch(state.get(FACING)) {
-    //        default -> NORTH_SHAPE;
-    //        case EAST -> EAST_SHAPE;
-    //        case SOUTH -> SOUTH_SHAPE;
-    //        case WEST -> WEST_SHAPE;
-    //    };
-    //}
+   @Override
+   public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+       return shape();
+   }
 
 
 

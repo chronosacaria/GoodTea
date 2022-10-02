@@ -26,6 +26,7 @@ public class GoodTea implements ModInitializer {
     public void onInitialize() {
         ItemsRegistry.registerItems();
         BlocksRegistry.registerBlocks();
+        CropsRegistry.registerCrops();
         BlockEntitiesRegistry.registerBlockEntities();
         ScreenHandlersRegistry.registerScreenHandlers();
         TeaRecipeRegistry.registerRecipes();

@@ -57,15 +57,15 @@ public class ItemsRegistry {
 
     // Seeds
     public static final Item GRAPE_SEEDS = registerItem("grape_seeds",
-            new AliasedBlockItem(BlocksRegistry.GRAPE_VINE_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+            new AliasedBlockItem(CropsRegistry.GRAPE_VINE_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
     public static final Item HONEYSUCKLE_SEEDS = registerItem("honeysuckle_seeds",
-            new AliasedBlockItem(BlocksRegistry.HONEYSUCKLE_SHRUB_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+            new AliasedBlockItem(CropsRegistry.HONEYSUCKLE_SHRUB_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
     public static final Item SAGE_SEEDS = registerItem("sage_seeds",
-            new AliasedBlockItem(BlocksRegistry.SAGE_CROP_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+            new AliasedBlockItem(CropsRegistry.SAGE_CROP_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
     public static final Item SPEARMINT_SEEDS = registerItem("spearmint_seeds",
-            new AliasedBlockItem(BlocksRegistry.SPEARMINT_CROP_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+            new AliasedBlockItem(CropsRegistry.SPEARMINT_CROP_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
     public static final Item TEA_SEEDS = registerItem("tea_seeds",
-            new AliasedBlockItem(BlocksRegistry.TEA_BUSH_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+            new AliasedBlockItem(CropsRegistry.TEA_BUSH_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
 
 
     private static Item registerItem(String name, Item item) {
