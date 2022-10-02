@@ -6,23 +6,27 @@ import net.minecraft.block.CropBlock;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
-import timefall.goodtea.registries.ItemsRegistry;
+import net.minecraft.state.property.Properties;
 
-public class GingerCropBlock extends CropBlock {
-    public static final IntProperty AGE = IntProperty.of("age", 0,7);
+public class GoodTeaCropBlockAge7 extends CropBlock {
 
-    public GingerCropBlock(Settings settings) {
+    public static final IntProperty AGE = Properties.AGE_7;
+    public static final int MAX_AGE = Properties.AGE_7_MAX;
+    ItemConvertible seedItem;
+
+    public GoodTeaCropBlockAge7(Settings settings, ItemConvertible seedItem) {
         super(settings);
+        this.seedItem = seedItem;
     }
 
     @Override
     protected ItemConvertible getSeedsItem() {
-        return ItemsRegistry.GINGER_ROOT;
+        return seedItem;
     }
 
     @Override
     public int getMaxAge() {
-        return 7;
+        return MAX_AGE;
     }
 
     @Override

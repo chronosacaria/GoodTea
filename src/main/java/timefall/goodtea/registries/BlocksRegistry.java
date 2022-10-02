@@ -10,23 +10,12 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import timefall.goodtea.GoodTea;
-import timefall.goodtea.blocks.crops.*;
 import timefall.goodtea.blocks.TeaKettleBlock;
 
 public class BlocksRegistry {
-
-    // Crop Blocks
-
-
-
     // Block Items
     public static final Block TEA_KETTLE_BLOCK = registerBlock("tea_kettle",
             new TeaKettleBlock(FabricBlockSettings.copy(Blocks.BONE_BLOCK).nonOpaque()), GoodTea.GOOD_TEA);
-
-    private static Block registerCropBlock(String name, Item cropItem, int maxAge) {
-        var block = new GoodTeaCropBlock(FabricBlockSettings.copy(Blocks.WHEAT).nonOpaque().noCollision(), cropItem, maxAge);
-        return Registry.register(Registry.BLOCK, new Identifier(GoodTea.MOD_ID, name), block);
-    }
 
     private static Block registerBlockWithoutBlockItem(String name, Block block, ItemGroup itemGroup) {
         return Registry.register(Registry.BLOCK, new Identifier(GoodTea.MOD_ID, name), block);

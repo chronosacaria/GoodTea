@@ -39,25 +39,10 @@ public class TeaKettleBlock extends BlockWithEntity{
 
     private VoxelShape shape() {
         return VoxelShapes.union(
-                VoxelShapes.cuboid(5,0,5,11,5,11),
-                VoxelShapes.cuboid(4,0,6,5,4,10),
-                VoxelShapes.cuboid(11,0,6,12,4,10),
-                VoxelShapes.cuboid(6,0,11,10,4,12),
-                VoxelShapes.cuboid(6,0,4,10,4,5),
-                VoxelShapes.cuboid(6,5,6,10,6,10),
-                VoxelShapes.cuboid(7,8,5,8,9,6),
-                VoxelShapes.cuboid(8,8,10,9,9,11),
-                VoxelShapes.cuboid(7,8,9,8,9,11),
-                VoxelShapes.cuboid(8,8,5,9,9,7),
-                VoxelShapes.cuboid(7,8,6,8,9,9),
-                VoxelShapes.cuboid(8,8,7,9,9,10),
-                VoxelShapes.cuboid(7,4,2,9,5,3),
-                VoxelShapes.cuboid(7,3,3,9,5,4),
-                VoxelShapes.cuboid(8,4,4,9,5,5),
-                VoxelShapes.cuboid(8,4,11,9,7,12),
-                VoxelShapes.cuboid(7,4,4,8,7,5),
-                VoxelShapes.cuboid(8,6,10,9,8,11),
-                VoxelShapes.cuboid(7,6,5,8,8,6)
+                VoxelShapes.cuboid(5f/16f,0,5f/16f,11f/16f,5f/16f,11f/16f),
+                VoxelShapes.cuboid(4f/16f,0,6f/16f,12f/16f,4f/16f,10f/16f),
+                VoxelShapes.cuboid(6f/16f,0,4f/16f,10f/16f,4f/16f,12f/16f),
+                VoxelShapes.cuboid(6f/16f,5f/16f,6f/16f,10f/16f,6f/16f,10f/16f)
         );
     }
 
@@ -91,13 +76,10 @@ public class TeaKettleBlock extends BlockWithEntity{
         return shape();
     }
 
-   @Override
-   public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-       return shape();
-   }
-
-
-
+    @Override
+    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return shape();
+    }
 
     /* BLOCK ENTITY STUFF */
 
@@ -116,7 +98,7 @@ public class TeaKettleBlock extends BlockWithEntity{
     @Nullable
     @Override
     public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getPlayerFacing());
+        return this.getDefaultState().with(FACING, ctx.getPlayerFacing().rotateYClockwise());
     }
 
 

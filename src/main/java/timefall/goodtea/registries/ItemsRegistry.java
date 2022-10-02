@@ -28,8 +28,8 @@ public class ItemsRegistry {
     // Herbs and Spices
     public static final Item CLOVES = registerItem("cloves",
             new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
-    public static final Item GINGER_ROOT = registerItem("ginger_root",
-            new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+    //public static final Item GINGER_ROOT = registerItem("ginger_root",
+    //        new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
     public static final Item GINGER_SLICE = registerItem("ginger_slice",
             new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
     public static final Item GRAPE_LEAF = registerItem("grape_leaf",
@@ -42,8 +42,8 @@ public class ItemsRegistry {
             new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
     public static final Item SPEARMINT_LEAF = registerItem("spearmint_leaf",
             new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
-    public static final Item TURMERIC_ROOT = registerItem("turmeric_root",
-            new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+    //public static final Item TURMERIC_ROOT = registerItem("turmeric_root",
+    //        new Item(new FabricItemSettings().group(GoodTea.GOOD_TEA)));
 
     // Teas
     public static final Item HONEYSUCKLE_ROSEBUD_TEA = registerItem("honeysuckle_rosebud_tea",
@@ -66,6 +66,10 @@ public class ItemsRegistry {
             new AliasedBlockItem(CropsRegistry.SPEARMINT_CROP_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
     public static final Item TEA_SEEDS = registerItem("tea_seeds",
             new AliasedBlockItem(CropsRegistry.TEA_BUSH_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+    public static final Item GINGER_ROOT_PLANTABLE = registerItem("ginger_root",
+            new AliasedBlockItem(CropsRegistry.GINGER_CROP_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
+    public static final Item TURMERIC_ROOT_PLANTABLE = registerItem("turmeric_root",
+            new AliasedBlockItem(CropsRegistry.TURMERIC_CROP_BLOCK, new FabricItemSettings().group(GoodTea.GOOD_TEA)));
 
 
     private static Item registerItem(String name, Item item) {
